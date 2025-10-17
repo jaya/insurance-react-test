@@ -1,89 +1,143 @@
-# Insurance React Live Coding Test
+# Technical Exercise — Insurance React Live Coding
 
-Este repositório contém um pequeno app em React (Vite + TypeScript) preparado para um exercício de live-coding.
+## Context
+This repository contains a small React + TypeScript application prepared for a live-coding exercise. The frontend consumes two mocked endpoints provided via Beeceptor to:
 
-Objetivo do teste:
-- Apresentar uma página de login (credenciais: `admin` / `admin`).
-- Exibir uma dashboard com a listagem de seguradoras consumindo o endpoint GET mocado em Beeceptor.
-- Mostrar um formulário para criação de uma policy; o método de POST está propositalmente não implementado — o candidato deverá implementar a função `createPolicy` em `src/lib/api.ts`.
+- List insurers: `GET https://jaya-insurance.free.beeceptor.com/insurances`
+- Create policies: `POST https://jaya-insurance.free.beeceptor.com/policies/` (the POST is intentionally left for the candidate to implement)
 
-O que eu já implementei:
-- Login simples em `src/pages/Login.tsx` (usuário/senha: `admin`/`admin`).
-- Dashboard em `src/pages/Dashboard.tsx` que busca a listagem de insurers via `src/lib/api.ts` -> `getInsurers()`.
-- Componente `InsurerList` para renderizar os insurers (`src/components/InsurerList.tsx`).
-- Formulário `PolicyForm` em `src/components/PolicyForm.tsx` com UI em Tailwind (CDN) — ao submeter, ele chama `createPolicy` em `src/lib/api.ts`.
-- Tipos em `src/types.ts`.
+The app uses Vite and includes Tailwind via CDN with a Flamingo pink theme for quick styling.
 
-Ponto que o candidato deve implementar (requisito do exercício):
-- Implementar a função `createPolicy(payload: PolicyPayload)` em `src/lib/api.ts` para realizar o POST para:
+## Exercise goal
+The goal is to evaluate frontend skills in a short live-coding session. The candidate should implement the missing network interaction for creating a policy and demonstrate good React/TypeScript practices, clear UI feedback and error handling.
 
-  `POST https://jaya-insurance.free.beeceptor.com/policies/`
+The exercise evaluates:
+- Clear, well-structured React + TypeScript code
+- Proper use of fetch/http client and async handling
+- Error handling and user feedback in the UI
+- Type usage (types/interfaces)
+- Small UX polish (forms, validation, responsiveness)
 
-  A implementação esperada (exemplo): realizar um `fetch` com `Content-Type: application/json`, retornar `await res.json()` e tratar erros HTTP.
+## What you must implement (candidate task)
 
-Critérios de aceitação do exercício (o que o avaliador deve pedir ao candidato):
-- Ao submeter o formulário, a função `createPolicy` deve enviar o JSON correto e retornar a resposta do servidor (o token `policy_id` e o `status`).
-- Tratar e mostrar erros HTTP no UI.
-- Código limpo e com tipos TypeScript (usar `PolicyPayload` em `src/types.ts`).
+### 1) Implement the POST call to create a policy
+File: `src/lib/api.ts`
+Function: `createPolicy(payload: PolicyPayload)`
 
-Como rodar localmente
+The function should:
+- Perform an HTTP POST to `https://jaya-insurance.free.beeceptor.com/policies/` with the JSON payload
+- Handle non-2xx responses by throwing a descriptive error
+- Return the parsed JSON response on success
 
-1. Instale dependências:
+Example expected request body (already used by the UI):
+
+```json
+{
+  "insurance_id": "ec7a15de-3f99-4e92-902b-44e2198ff46c",
+  "quote_id": "qte_92f3c8a1",
+  "insurance_type": "Car",
+  "plan_code": "AUTO_PREMIUM",
+  "policy_start_date": "2025-10-09",
+  "applicant": {
+    "full_name": "John Doe",
+    "document_id": "999.999.999-99",
+    "birthdate": "1990-04-12",
+    "email": "john.doe@email.com",
+    "phone": "+55 11 99999-9999",
+    "address": {
+      "country": "BR",
+      "postal_code": "01310-000",
+      "city": "São Paulo",
+      "state": "SP",
+      "street": "Av. Paulista, 1000, apto 12"
+    }
+  },
+  "risk_object": { "car": { "vin": "9BWZZZ377VT004251", "plate": "ABC1D23", "year": 2022, "make": "Volkswagen", "model": "Golf" } },
+  "beneficiaries": [{ "name": "Jane Doe", "relationship": "Spouse", "share": 100 }],
+  "payment": { "method": "credit_card", "currency": "BRL", "installments": 12, "amount": 129.5, "card": { "holder_name": "JOHN DOE", "last4": "4242", "token": "tok_visa_abc123" } },
+  "metadata": { "channel": "web", "utm_source": "campaign_oct" }
+}
+```
+
+Suggested implementation (replace placeholder in `src/lib/api.ts`):
+
+```ts
+export async function createPolicy(payload: PolicyPayload) {
+  const res = await fetch(`${BASE}/policies/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Create policy failed: ${res.status}`)
+  return res.json()
+}
+```
+
+The UI (`src/components/PolicyForm.tsx`) will display the response or the error message — make sure to return the JSON the endpoint provides.
+
+### 2) (Optional frontend improvements)
+- Add basic validation to the policy form (required fields)
+- Show loading / success states more explicitly
+- Improve error messages based on server response
+
+## Important notes and project specifics
+- The project already injects a test insurer named **Flamingo Insurance** into the insurers list (see `src/lib/api.ts`) so you can test the flow without modifying Beeceptor.
+- Tailwind is included via CDN in `index.html` and a flamingo pink theme is defined (use `bg-primary`, `text-primary`, `focus:ring-primary` etc.).
+- The `createPolicy` function is intentionally left as the exercise — all other wiring (form, state, types) is implemented and typed.
+
+API endpoints used in this exercise
+- GET insurers: `https://jaya-insurance.free.beeceptor.com/insurances`
+- POST policies: `https://jaya-insurance.free.beeceptor.com/policies/`
+
+## Acceptance criteria / Evaluation
+Your submission will be evaluated on the following:
+- The `createPolicy` function performs the POST and returns the endpoint JSON on success
+- The UI shows appropriate loading, success and error states
+- Code is clean, typed and easy to follow
+- Small UX considerations (field placeholders, labels, accessible buttons)
+
+## How to run the project locally
+1. Install dependencies
 
 ```bash
 npm install
 ```
 
-2. Rode em modo dev (Vite):
+2. Start the dev server
 
 ```bash
 npm run dev
 ```
 
-3. Acesse o app em `http://localhost:5173` (ou a porta mostrada pelo Vite).
+3. Open the app in the browser (Vite will show the URL, typically `http://localhost:5173`)
 
-Credenciais para login
+4. Login credentials for the live test
 
-- Usuário: `admin`
-- Senha: `admin`
+- Username: `admin`
+- Password: `admin`
 
-Arquivos importantes
+5. To test the policy creation flow locally
+- Open the dashboard after login
+- Use the Create Policy panel (Flamingo Insurance is present by default)
+- Submit; if `createPolicy` is still the placeholder the UI will show an instruction/error — implement the function to get a successful response
 
-- `src/lib/api.ts` — implementar `createPolicy` aqui.
-- `src/pages/Login.tsx` — página de login.
-- `src/pages/Dashboard.tsx` — dashboard que consome o GET e exibe a `PolicyForm`.
-- `src/components/PolicyForm.tsx` — formulário que constrói o payload e chama `createPolicy`.
-- `src/types.ts` — tipos do domínio (`Insurer`, `PolicyPayload`, `Plan`, ...)
+## Project structure (relevant files)
+- `src/lib/api.ts` — API helpers; implement `createPolicy` here
+- `src/components/PolicyForm.tsx` — policy creation form (constructs payload)
+- `src/pages/Dashboard.tsx` — main UI that fetches insurers and renders the form
+- `src/components/InsurerList.tsx` — list of insurers
+- `src/pages/Login.tsx` — simple admin/admin login
+- `index.html` — includes Tailwind CDN and flamingo theme
 
-Sugestão de implementação para o candidato (exemplo, coloque na `createPolicy`):
+## Extras / Hints
+- Use `fetch` or `httpx`-like abstractions (frontend: `fetch` is fine)
+- Make sure to set `Content-Type: application/json` on the POST
+- Handle non-2xx responses explicitly and return useful messages
 
-- Fazer POST simples com fetch:
+## Troubleshooting
+- If the UI shows an error about `createPolicy not implemented`, implement the POST in `src/lib/api.ts` as described above and re-run the flow.
+- If the insurers list is empty, the app already prepends **Flamingo Insurance** to the list.
 
-```js
-const res = await fetch(`${BASE}/policies/`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload),
-})
-if (!res.ok) throw new Error(`Create policy failed: ${res.status}`)
-return res.json()
-```
+---
 
-Notas e observações
-
-- Para manter o projeto leve, o Tailwind é incluído via CDN no `index.html` para que você possa usar utilitários Tailwind sem modificar o build.
-- O endpoint GET já está sendo consumido de: `https://jaya-insurance.free.beeceptor.com/insurances`.
-- O POST esperado (a ser implementado) é `https://jaya-insurance.free.beeceptor.com/policies/`.
-
-Qualidade / Checklist (o que eu verifiquei):
-- [x] Login e navegação interna funcionando (estado local).
-- [x] GET de insurers implementado e tipado.
-- [x] Componentes da UI criados com Tailwind utilities (via CDN).
-- [x] `createPolicy` intencionalmente não implementado — instruções claras para o candidato.
-- [x] Tipos TypeScript adicionados (`src/types.ts`).
-
-Se quiser, eu posso também:
-- Implementar o `createPolicy` completo (testando a chamada ao Beeceptor) — diga se quer que eu implemente e eu faço a mudança e testo.
-- Adicionar testes unitários simples (Jest/Testing Library) para as funções que não dependem de rede.
-
-Boa sorte com o live coding!
+Good luck on the live coding test!
